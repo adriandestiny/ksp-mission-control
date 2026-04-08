@@ -482,7 +482,10 @@ html, body {
   color: var(--text-dim);
 }
 
-/* ── Scanline overlay ─────────────────────────────────── */
+/* ── Google Fonts Import ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=VT323&display=swap');
+
+/* ── CRT Scanline Overlay ─────────────────────────────── */
 body::after {
   content: '';
   position: fixed;
@@ -496,19 +499,265 @@ body::after {
   );
   pointer-events: none;
   z-index: 9999;
+  animation: scanlines 8s linear infinite;
 }
 
-/* ── Vignette ─────────────────────────────────────────── */
+@keyframes scanlines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+/* ── Screen Flicker Effect ────────────────────────────── */
+@keyframes flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.98; }
+}
+
+body {
+  animation: flicker 8s infinite;
+}
+
+/* ── Film Grain Noise Texture ─────────────────────────── */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9997;
+  mix-blend-mode: overlay;
+}
+
+/* ── Retro Perspective Grid Background ────────────────── */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, transparent 0%, rgba(0,255,255,0.03) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 49px,
+      rgba(0,255,255,0.05) 49px,
+      rgba(0,255,255,0.05) 50px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 49px,
+      rgba(0,255,255,0.05) 49px,
+      rgba(0,255,255,0.05) 50px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Vignette ─────────────────────────────────────────── */
+html::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
   pointer-events: none;
   z-index: 9998;
 }
 
-/* Scrollbar */
+/* ── Phosphor Glow Effects ────────────────────────────── */
+.telemetry-value,
+.data-readout,
+.metric-value {
+  text-shadow:
+    0 0 5px rgba(0, 255, 65, 0.8),
+    0 0 10px rgba(0, 255, 65, 0.5),
+    0 0 20px rgba(0, 255, 65, 0.3);
+  color: var(--text-nominal);
+}
+
+.data-value.accent {
+  text-shadow:
+    0 0 5px rgba(0, 180, 230, 0.8),
+    0 0 10px rgba(0, 180, 230, 0.5),
+    0 0 20px rgba(0, 180, 230, 0.3);
+}
+
+.data-value.warning,
+.warning-indicator {
+  text-shadow:
+    0 0 5px rgba(255, 176, 0, 0.8),
+    0 0 10px rgba(255, 176, 0, 0.5),
+    0 0 20px rgba(255, 176, 0, 0.3);
+  color: var(--text-caution);
+}
+
+/* ── LED 7-Segment Display Styling ──────────────────────── */
+.time-value {
+  font-family: 'VT323', monospace;
+  background: rgba(0, 20, 10, 0.6);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 255, 65, 0.4);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+/* ── 3D Beveled Panel Borders ─────────────────────────── */
+.console-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--panel-radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s;
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,0.05),
+    inset -1px -1px 0 rgba(0,0,0,0.3),
+    2px 2px 8px rgba(0,0,0,0.4);
+}
+
+.console-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
+  opacity: 0.5;
+}
+
+.panel-header {
+  background: linear-gradient(to bottom, #1a2530, #0d1520);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 2px 4px rgba(0,0,0,0.3);
+}
+
+.panel-body {
+  background: linear-gradient(135deg, rgba(8,15,21,1) 0%, rgba(5,10,14,1) 100%);
+  flex: 1;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* ── Blinking LED Status Indicators ────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--text-nominal); }
+  50% { opacity: 0.5; box-shadow: 0 0 2px var(--text-nominal); }
+}
+
+@keyframes alert-flash {
+  0%, 100% { opacity: 1; background: var(--text-warning); box-shadow: 0 0 10px var(--text-warning); }
+  50% { opacity: 0.4; background: rgba(255,87,34,0.4); box-shadow: 0 0 2px var(--text-warning); }
+}
+
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-warning);
+  box-shadow: 0 0 6px var(--text-warning);
+}
+
+.conn-dot.connected {
+  background: var(--text-nominal);
+  box-shadow: 0 0 8px var(--text-nominal);
+  animation: pulse 2s infinite;
+}
+
+.status-light {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-nominal);
+  box-shadow: 0 0 4px var(--text-nominal);
+  animation: blink 2s infinite;
+}
+
+.warning-indicator {
+  animation: blink 1s infinite;
+}
+
+.alert-indicator {
+  animation: alert-flash 0.5s infinite;
+}
+
+/* ── Tachistoscopic Alert Text Reveal ─────────────────── */
+@keyframes reveal-char {
+  0% { opacity: 0; transform: translateY(-2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#alert-message {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#alert-message.typing span {
+  opacity: 0;
+  animation: reveal-char 0.05s forwards;
+}
+
+#alert-message.typing::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 2px;
+  height: 1.2em;
+  background: currentColor;
+  margin-top: -0.6em;
+  animation: blink 0.5s infinite;
+}
+
+/* ── Retro Font Styling ────────────────────────────────── */
+.nasa-worm,
+.mcc-title,
+.panel-title {
+  font-family: 'Orbitron', monospace;
+  text-shadow:
+    0 0 5px rgba(0, 180, 230, 0.8),
+    0 0 10px rgba(0, 180, 230, 0.5);
+}
+
+.time-value,
+.metric-value,
+.telemetry-value {
+  font-family: 'VT323', monospace;
+}
+
+.nasa-worm {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--text-accent);
+  font-family: 'Orbitron', monospace;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
