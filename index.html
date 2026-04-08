@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KSP Mission Control – Artemis MCC</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ── Top Header Bar ─────────────────────────────── -->
+  <header class="mcc-header">
+    <div class="header-left">
+      <div class="nasa-worm">NASA</div>
+      <div class="mcc-title-block">
+        <div class="mcc-title">MISSION CONTROL CENTER</div>
+        <div class="mcc-subtitle">WHITE FLIGHT CONTROL ROOM · HOUSTON TX</div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="mission-name" id="vessel-name">NO ACTIVE VESSEL</div>
+      <div class="mission-phase" id="mission-phase">PRE-LAUNCH</div>
+    </div>
+    <div class="header-right">
+      <div class="time-block">
+        <div class="time-label">MET</div>
+        <div class="time-value" id="met-display">00:00:00</div>
+      </div>
+      <div class="time-block">
+        <div class="time-label">UT</div>
+        <div class="time-value" id="ut-display">00:00:00</div>
+      </div>
+      <div class="conn-status" id="conn-status">
+        <span class="conn-dot" id="conn-dot"></span>
+        <span id="conn-text">CONNECTING…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Alert Banner ───────────────────────────────── -->
+  <div class="alert-bar" id="alert-bar">
+    <span class="alert-icon">⚠</span>
+    <span id="alert-message">AWAITING kRPC CONNECTION — LAUNCH KSP AND START kRPC SERVER</span>
+  </div>
+
+  <!-- ── Main Console Grid ──────────────────────────── -->
+  <main class="mcc-grid">
+
+    <!-- ROW 1: FLIGHT DIRECTOR + FDO + GNC -->
+    <div class="console-panel span-2" id="panel-flight">
+      <div class="panel-header">
+        <span class="panel-callsign">FLIGHT</span>
+        <span class="panel-title">Flight Director</span>
+        <span class="panel-status nominal" id="flight-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">VESSEL</div>
+            <div class="data-value large" id="f-vessel">---</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">SITUATION</div>
+            <div class="data-value large" id="f-situation">---</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">BODY</div>
+            <div class="data-value" id="f-body">---</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">PHASE</div>
+            <div class="data-value accent" id="f-phase">---</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">CREW</div>
+            <div class="data-value" id="f-crew">0 / 0</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">PARTS</div>
+            <div class="data-value" id="f-parts">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel span-2" id="panel-fdo">
+      <div class="panel-header">
+        <span class="panel-callsign">FDO</span>
+        <span class="panel-title">Flight Dynamics Officer</span>
+        <span class="panel-status nominal" id="fdo-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">APOAPSIS</div>
+            <div class="data-value" id="fdo-apo">0 km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">PERIAPSIS</div>
+            <div class="data-value" id="fdo-peri">0 km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">INCLINATION</div>
+            <div class="data-value" id="fdo-inc">0.00°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ECCENTRICITY</div>
+            <div class="data-value" id="fdo-ecc">0.0000</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ALTITUDE MSL</div>
+            <div class="data-value" id="fdo-alt">0 km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ORB SPEED</div>
+            <div class="data-value" id="fdo-spd">0 m/s</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">T+ APOAPSIS</div>
+            <div class="data-value" id="fdo-tapo">--:--:--</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ORB PERIOD</div>
+            <div class="data-value" id="fdo-period">--:--:--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel span-2" id="panel-gnc">
+      <div class="panel-header">
+        <span class="panel-callsign">GNC</span>
+        <span class="panel-title">Guidance, Navigation &amp; Control</span>
+        <span class="panel-status nominal" id="gnc-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="attitude-display">
+          <canvas id="attitude-canvas" width="90" height="90"></canvas>
+          <div class="attitude-readouts">
+            <div class="data-item">
+              <div class="data-label">PITCH</div>
+              <div class="data-value" id="gnc-pitch">0.0°</div>
+            </div>
+            <div class="data-item">
+              <div class="data-label">ROLL</div>
+              <div class="data-value" id="gnc-roll">0.0°</div>
+            </div>
+            <div class="data-item">
+              <div class="data-label">HEADING</div>
+              <div class="data-value" id="gnc-hdg">000°</div>
+            </div>
+          </div>
+        </div>
+        <div class="data-grid-2" style="margin-top:6px;">
+          <div class="data-item">
+            <div class="data-label">SURF SPEED</div>
+            <div class="data-value" id="gnc-spdS">0 m/s</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">VERT SPEED</div>
+            <div class="data-value" id="gnc-vert">0 m/s</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">LATITUDE</div>
+            <div class="data-value" id="gnc-lat">0.000°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">LONGITUDE</div>
+            <div class="data-value" id="gnc-lon">0.000°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: BOOSTER + PROP + EECOM + MPO -->
+    <div class="console-panel span-2" id="panel-booster">
+      <div class="panel-header">
+        <span class="panel-callsign">BOOSTER</span>
+        <span class="panel-title">Booster Officer</span>
+        <span class="panel-status nominal" id="booster-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">STAGE</div>
+            <div class="data-value large" id="boost-stage">0</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ENGINES</div>
+            <div class="data-value large" id="boost-eng">0 / 0</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">THROTTLE</div>
+            <div class="data-value accent" id="boost-thr">0%</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">THRUST</div>
+            <div class="data-value" id="boost-thrust">0 kN</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">MAX THRUST</div>
+            <div class="data-value" id="boost-maxT">0 kN</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Isp</div>
+            <div class="data-value" id="boost-isp">0 s</div>
+          </div>
+        </div>
+        <div class="progress-bar-row">
+          <div class="data-label">THROTTLE</div>
+          <div class="progress-bar"><div class="progress-fill accent" id="thr-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel span-2" id="panel-prop">
+      <div class="panel-header">
+        <span class="panel-callsign">PROP</span>
+        <span class="panel-title">Propulsion Officer</span>
+        <span class="panel-status nominal" id="prop-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">TWR</div>
+            <div class="data-value large" id="prop-twr">0.00</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ΔVELOCITY</div>
+            <div class="data-value large" id="prop-dv">0 m/s</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">TOTAL MASS</div>
+            <div class="data-value" id="prop-mass">0 t</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">DRY MASS</div>
+            <div class="data-value" id="prop-dry">0 t</div>
+          </div>
+        </div>
+        <div class="fuel-bars">
+          <div class="fuel-row">
+            <div class="fuel-label">LF</div>
+            <div class="progress-bar"><div class="progress-fill lf" id="lf-bar"></div></div>
+            <div class="fuel-value" id="lf-val">0/0</div>
+          </div>
+          <div class="fuel-row">
+            <div class="fuel-label">OX</div>
+            <div class="progress-bar"><div class="progress-fill ox" id="ox-bar"></div></div>
+            <div class="fuel-value" id="ox-val">0/0</div>
+          </div>
+          <div class="fuel-row">
+            <div class="fuel-label">MP</div>
+            <div class="progress-bar"><div class="progress-fill mono" id="mono-bar"></div></div>
+            <div class="fuel-value" id="mono-val">0/0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel" id="panel-eecom">
+      <div class="panel-header">
+        <span class="panel-callsign">EECOM</span>
+        <span class="panel-title">Emergency, Environmental &amp; Consumables</span>
+        <span class="panel-status nominal" id="eecom-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="fuel-bars">
+          <div class="fuel-row">
+            <div class="fuel-label">SF</div>
+            <div class="progress-bar"><div class="progress-fill sf" id="sf-bar"></div></div>
+            <div class="fuel-value" id="sf-val">0/0</div>
+          </div>
+          <div class="fuel-row">
+            <div class="fuel-label">AB</div>
+            <div class="progress-bar"><div class="progress-fill ablator" id="ab-bar"></div></div>
+            <div class="fuel-value" id="ab-val">0/0</div>
+          </div>
+          <div class="fuel-row">
+            <div class="fuel-label">XE</div>
+            <div class="progress-bar"><div class="progress-fill xe" id="xe-bar"></div></div>
+            <div class="fuel-value" id="xe-val">0/0</div>
+          </div>
+        </div>
+        <div class="data-grid-2" style="margin-top:6px;">
+          <div class="data-item">
+            <div class="data-label">CREW</div>
+            <div class="data-value" id="eecom-crew">0</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">CAPACITY</div>
+            <div class="data-value" id="eecom-cap">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel" id="panel-mpo">
+      <div class="panel-header">
+        <span class="panel-callsign">MPO</span>
+        <span class="panel-title">Mechanical &amp; Power Officer</span>
+        <span class="panel-status nominal" id="mpo-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">PARTS</div>
+            <div class="data-value large" id="mpo-parts">0</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ELEC CHARGE</div>
+            <div class="data-value large" id="mpo-ec">0</div>
+          </div>
+        </div>
+        <div class="fuel-bars">
+          <div class="fuel-row">
+            <div class="fuel-label">EC</div>
+            <div class="progress-bar"><div class="progress-fill ec" id="ec-bar"></div></div>
+            <div class="fuel-value" id="ec-val">0/0</div>
+          </div>
+        </div>
+        <div class="data-grid-2" style="margin-top:6px;">
+          <div class="data-item inline-flags">
+            <div class="flag" id="flag-sas">SAS</div>
+            <div class="flag" id="flag-rcs">RCS</div>
+            <div class="flag" id="flag-gear">GEAR</div>
+            <div class="flag" id="flag-brakes">BRAKE</div>
+            <div class="flag" id="flag-lights">LIGHT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: CONTROL + INCO + FAO + FOD -->
+    <div class="console-panel" id="panel-control">
+      <div class="panel-header">
+        <span class="panel-callsign">CONTROL</span>
+        <span class="panel-title">Control Officer</span>
+        <span class="panel-status nominal" id="control-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">SURF ALT</div>
+            <div class="data-value" id="ctrl-salt">0 m</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">SRF SPEED</div>
+            <div class="data-value" id="ctrl-spd">0 m/s</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ANG VEL X</div>
+            <div class="data-value" id="ctrl-avx">0.000</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ANG VEL Y</div>
+            <div class="data-value" id="ctrl-avy">0.000</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ANG VEL Z</div>
+            <div class="data-value" id="ctrl-avz">0.000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel" id="panel-inco">
+      <div class="panel-header">
+        <span class="panel-callsign">INCO</span>
+        <span class="panel-title">Integrated Communications Officer</span>
+        <span class="panel-status nominal" id="inco-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">SIGNAL STR</div>
+            <div class="data-value accent" id="inco-sig">0%</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">CAN COMM</div>
+            <div class="data-value" id="inco-comm">NO</div>
+          </div>
+        </div>
+        <div class="progress-bar-row">
+          <div class="data-label">SIGNAL</div>
+          <div class="progress-bar"><div class="progress-fill signal" id="sig-bar" style="width:0%"></div></div>
+        </div>
+        <div class="data-grid-2" style="margin-top:8px;">
+          <div class="data-item">
+            <div class="data-label">TARGET</div>
+            <div class="data-value small" id="inco-tgt">None</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">TGT DIST</div>
+            <div class="data-value small" id="inco-tgtd">---</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel span-2" id="panel-fao">
+      <div class="panel-header">
+        <span class="panel-callsign">FAO</span>
+        <span class="panel-title">Flight Activities Officer</span>
+        <span class="panel-status nominal" id="fao-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">T+ APOAPSIS</div>
+            <div class="data-value" id="fao-tapo">--:--:--</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">T+ PERIAPSIS</div>
+            <div class="data-value" id="fao-tperi">--:--:--</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">MANEUVER NODE</div>
+            <div class="data-value" id="fao-node">NONE</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">NODE ΔV</div>
+            <div class="data-value" id="fao-ndv">---</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">TIME TO NODE</div>
+            <div class="data-value" id="fao-ntime">---</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">TARGET</div>
+            <div class="data-value small" id="fao-tgt">None</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: GC + CDH + PAO + FOD -->
+    <div class="console-panel" id="panel-gc">
+      <div class="panel-header">
+        <span class="panel-callsign">GC</span>
+        <span class="panel-title">Ground Control Officer</span>
+        <span class="panel-status nominal" id="gc-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">BODY</div>
+            <div class="data-value" id="gc-body">Kerbin</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">RADIUS</div>
+            <div class="data-value" id="gc-radius">600 km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">LATITUDE</div>
+            <div class="data-value" id="gc-lat">0.000°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">LONGITUDE</div>
+            <div class="data-value" id="gc-lon">0.000°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">SMA</div>
+            <div class="data-value small" id="gc-sma">---</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel" id="panel-cdh">
+      <div class="panel-header">
+        <span class="panel-callsign">C&amp;DH</span>
+        <span class="panel-title">Command &amp; Data Handling</span>
+        <span class="panel-status nominal" id="cdh-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="data-grid-2">
+          <div class="data-item">
+            <div class="data-label">SAS MODE</div>
+            <div class="data-value" id="cdh-sas">OFF</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">RCS</div>
+            <div class="data-value" id="cdh-rcs">OFF</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">GEAR</div>
+            <div class="data-value" id="cdh-gear">UP</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">BRAKES</div>
+            <div class="data-value" id="cdh-brakes">OFF</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">LIGHTS</div>
+            <div class="data-value" id="cdh-lights">OFF</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">THROTTLE</div>
+            <div class="data-value accent" id="cdh-thr">0%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-panel span-2" id="panel-fod">
+      <div class="panel-header">
+        <span class="panel-callsign">FOD</span>
+        <span class="panel-title">Flight Operations Director</span>
+        <span class="panel-status nominal" id="fod-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="fod-summary">
+          <div class="summary-line">
+            <span class="sum-label">VESSEL</span>
+            <span class="sum-value" id="fod-vessel">---</span>
+          </div>
+          <div class="summary-line">
+            <span class="sum-label">SITUATION</span>
+            <span class="sum-value" id="fod-sit">---</span>
+          </div>
+          <div class="summary-line">
+            <span class="sum-label">ALTITUDE</span>
+            <span class="sum-value" id="fod-alt">---</span>
+          </div>
+          <div class="summary-line">
+            <span class="sum-label">SPEED (ORB)</span>
+            <span class="sum-value" id="fod-spd">---</span>
+          </div>
+          <div class="summary-line">
+            <span class="sum-label">TWR</span>
+            <span class="sum-value" id="fod-twr">---</span>
+          </div>
+          <div class="summary-line">
+            <span class="sum-label">ΔV REMAIN</span>
+            <span class="sum-value" id="fod-dv">---</span>
+          </div>
+          <div class="summary-line">
+            <span class="sum-label">MET</span>
+            <span class="sum-value mono" id="fod-met">00:00:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAO – full width bottom bar -->
+    <div class="console-panel pao-panel span-6" id="panel-pao">
+      <div class="panel-header">
+        <span class="panel-callsign">PAO</span>
+        <span class="panel-title">Public Affairs Officer</span>
+        <span class="panel-status nominal" id="pao-status">NOMINAL</span>
+      </div>
+      <div class="panel-body">
+        <div class="pao-ticker" id="pao-ticker">
+          KSP MISSION CONTROL — ARTEMIS MCC — AWAITING LAUNCH
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Bottom Status Bar ───────────────────────────── -->
+  <footer class="mcc-footer">
+    <div>WFCR · WHITE FCR · HOUSTON MISSION OPERATIONS</div>
+    <div id="footer-server">SERVER: OFFLINE</div>
+    <div id="footer-time">LOCAL: --:--:--</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
