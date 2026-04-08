@@ -197,6 +197,25 @@ function buildPaoMessage(d) {
   return '· ' + parts.join('   ·   ') + '   · ';
 }
 
+// ── Tachistoscopic Alert Text Reveal ───────────────────────────────────────
+
+function typeAlertMessage(element, text) {
+  if (!element) return;
+  element.classList.remove('typing');
+  element.innerHTML = '';
+  
+  const chars = text.split('');
+  chars.forEach((char, i) => {
+    const span = document.createElement('span');
+    span.textContent = char;
+    span.style.animationDelay = (i * 30) + 'ms';
+    element.appendChild(span);
+  });
+  
+  element.classList.add('typing');
+  setTimeout(() => element.classList.remove('typing'), chars.length * 30 + 200);
+}
+
 // ── Main Update ─────────────────────────────────────────────────────────────
 
 function update(d) {
@@ -216,22 +235,24 @@ function update(d) {
   const alertBar = document.getElementById('alert-bar');
   const alertMsg = document.getElementById('alert-message');
   if (alertBar && alertMsg) {
+    let alertText = '';
     if (!connected) {
       alertBar.className = 'alert-bar';
-      alertMsg.textContent = 'NO kRPC CONNECTION — ENSURE KSP IS RUNNING AND kRPC SERVER IS ACTIVE';
+      alertText = 'NO kRPC CONNECTION — ENSURE KSP IS RUNNING AND kRPC SERVER IS ACTIVE';
     } else if (d.periapsis < 0 && d.situation === 'ORBITING') {
       alertBar.className = 'alert-bar';
-      alertMsg.textContent = `⚠ PERIAPSIS BELOW TERRAIN — TIME TO IMPACT: ${fmtTime(d.time_to_periapsis)}`;
+      alertText = `PERIAPSIS BELOW TERRAIN — TIME TO IMPACT: ${fmtTime(d.time_to_periapsis)}`;
     } else if (d.twr > 0 && d.twr < 1 && d.situation === 'ATMOSPHERIC FLIGHT') {
       alertBar.className = 'alert-bar';
-      alertMsg.textContent = `⚠ LOW TWR — THRUST TO WEIGHT: ${fmt(d.twr, 2)}`;
+      alertText = `LOW TWR — THRUST TO WEIGHT: ${fmt(d.twr, 2)}`;
     } else if (d.electric_charge_max > 0 && pct(d.electric_charge, d.electric_charge_max) < 10) {
       alertBar.className = 'alert-bar';
-      alertMsg.textContent = `⚠ LOW ELECTRIC CHARGE — ${fmt(d.electric_charge, 0)} / ${fmt(d.electric_charge_max, 0)}`;
+      alertText = `LOW ELECTRIC CHARGE — ${fmt(d.electric_charge, 0)} / ${fmt(d.electric_charge_max, 0)}`;
     } else {
       alertBar.className = 'alert-bar nominal';
-      alertMsg.textContent = `ALL SYSTEMS NOMINAL — ${d.mission_phase} — VESSEL: ${d.vessel_name}`;
+      alertText = `ALL SYSTEMS NOMINAL — ${d.mission_phase} — VESSEL: ${d.vessel_name}`;
     }
+    typeAlertMessage(alertMsg, alertText);
   }
 
   // ── Header
